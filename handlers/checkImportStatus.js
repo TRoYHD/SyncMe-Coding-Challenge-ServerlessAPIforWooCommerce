@@ -1,8 +1,8 @@
-const importService = require("../services/importService");
+const categoryService = require("../services/categoryService");
 
 exports.handler = async (event) => {
   try {
-    const status = await importService.getImportStatus();
+    const status = await categoryService.getImportStatus(); // Call the method from categoryService
     return { statusCode: 200, body: JSON.stringify({ status }) };
   } catch (error) {
     console.error("Error checking import status:", error);

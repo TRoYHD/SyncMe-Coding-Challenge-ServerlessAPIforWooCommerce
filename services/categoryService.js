@@ -1,5 +1,5 @@
 const dynamoDB = require("../repositories/dynamoService");
-const wooCommerceService = require("../repositories/dynamoService");
+const wooCommerceService = require("../repositories/wooService");
 const { v4: uuidv4 } = require("uuid"); // Generate unique IDs if needed
 
 // Fetch categories from WooCommerce and store them in DynamoDB
@@ -19,7 +19,7 @@ const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
     // Step 4: Store categories in DynamoDB
     for (const category of categories) {
       if (!category.id) {
-        category.id = uuidv4();
+        category.id = uuidv4(); // Ensure every category has a unique ID if needed
       }
 
       await dynamoDB.storeCategory(category); // Store category in DynamoDB
@@ -28,7 +28,7 @@ const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
     // Step 5: Set Import Status to "completed"
     await dynamoDB.updateImportStatus("completed");
 
-    return categories;
+    return categories; // Return categories after storing
   } catch (error) {
     console.error("Error retrieving categories:", error);
 
@@ -51,7 +51,7 @@ const getStoredCategories = async () => {
 // Delete a category from DynamoDB
 const deleteCategoryFromStore = async (categoryId) => {
   try {
-    await dynamoDB.deleteCategory(categoryId);
+    await dynamoDB.deleteCategory(categoryId); // Delete category by ID
     return { message: "Category deleted successfully from DynamoDB" };
   } catch (error) {
     console.error("Error deleting category:", error);
