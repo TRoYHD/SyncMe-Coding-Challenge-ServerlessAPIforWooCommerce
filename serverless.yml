@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+
+  # API Gateway
+  MyHttpApi:
+    Type: AWS::Serverless::HttpApi
+
+  # DynamoDB Table for storing WooCommerce categories
+  WooCommerceCategoriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "WooCommerceCategories"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # DynamoDB Table for storing Import Status
+  ImportStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "ImportStatus"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # Lambda Layer for Shared Dependencies
+  SharedDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: "SharedDependencies"
+      CompatibleRuntimes:
+        - nodejs18.x
+      ContentUri: ./layer
+
+  # IAM Role for Lambda to Read from SSM Parameter Store
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Policies:
+        - PolicyName: LambdaDynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt WooCommerceCategoriesTable.Arn
+                  - !GetAtt ImportStatusTable.Arn
+        - PolicyName: LambdaSSMAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooBaseUrl"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooConsumerKey"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooConsumerSecret"
+
+  # Lambda Function to Import Categories from WooCommerce (Async)
+  ImportCategoriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/importCategories.handler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref SharedDependenciesLayer
+      Environment:
+        Variables:
+          WOO_BASE_URL: !Sub "{{resolve:ssm:/WooBaseUrl}}"
+          WOO_CONSUMER_KEY: !Sub "{{resolve:ssm:/WooConsumerKey}}"
+          WOO_CONSUMER_SECRET: !Sub "{{resolve:ssm:/WooConsumerSecret}}"
+          DYNAMODB_TABLE: "WooCommerceCategories"
+          IMPORT_STATUS_TABLE: "ImportStatus"
+      Events:
+        HttpApi:
+          ApiId: !Ref MyHttpApi
+          Path: /import-categories
+          Method: post
+
+  # Lambda Function to Get Import Status
+  GetImportStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/getImportStatus.handler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref SharedDependenciesLayer
+      Environment:
+        Variables:
+          IMPORT_STATUS_TABLE: "ImportStatus"
+      Events:
+        HttpApi:
+          ApiId: !Ref MyHttpApi
+          Path: /import-status
+          Method: get
+
+  # Lambda Function to Get Stored Categories from DynamoDB
+  GetStoredCategoriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/getStoredCategories.handler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref SharedDependenciesLayer
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: "WooCommerceCategories"
+      Events:
+        HttpApi:
+          ApiId: !Ref MyHttpApi
+          Path: /stored-categories
+          Method: get
+
+  # Lambda Function to Delete a Product Category by WooCommerce Category ID
+  DeleteCategoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/deleteCategory.handler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref SharedDependenciesLayer
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: "WooCommerceCategories"
+      Events:
+        HttpApi:
+          ApiId: !Ref MyHttpApi
+          Path: /categories/{id}
+          Method: delete
+
+Outputs:
+  ApiGatewayEndpoint:
+    Description: "API Gateway Endpoint"
+    Value: !Sub "https://${MyHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+  ImportCategoriesFunctionArn:
+    Description: "Lambda Function ARN for Importing WooCommerce Categories"
+    Value: !GetAtt ImportCategoriesFunction.Arn
+
+  GetImportStatusFunctionArn:
+    Description: "Lambda Function ARN for Checking Import Status"
+    Value: !GetAtt GetImportStatusFunction.Arn
+
+  GetStoredCategoriesFunctionArn:
+    Description: "Lambda Function ARN for Retrieving Stored Categories"
+    Value: !GetAtt GetStoredCategoriesFunction.Arn
+
+  DeleteCategoryFunctionArn:
+    Description: "Lambda Function ARN for Deleting a Category by ID"
+    Value: !GetAtt DeleteCategoryFunction.Arn
