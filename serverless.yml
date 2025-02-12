@@ -37,6 +37,12 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
+  # SQS Queue for handling category imports asynchronously
+  ImportQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "ImportQueue"
+
   # Lambda Layer for Shared Dependencies
   SharedDependenciesLayer:
     Type: AWS::Serverless::LayerVersion
@@ -46,7 +52,7 @@ Resources:
         - nodejs18.x
       ContentUri: ./layer
 
-  # IAM Role for Lambda to Read from SSM Parameter Store
+  # IAM Role for Lambda to interact with DynamoDB, SSM, and SQS
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -84,12 +90,23 @@ Resources:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooBaseUrl"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooConsumerKey"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/WooConsumerSecret"
+        - PolicyName: LambdaSQSPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt ImportQueue.Arn
 
-  # Lambda Function to Import Categories from WooCommerce (Async)
-  ImportCategoriesFunction:
+  # Lambda Function to Import Categories from WooCommerce (Send to SQS)
+  GetCategoriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/importCategories.handler
+      Handler: handlers/GetCategories.handler
       Runtime: nodejs18.x
       MemorySize: 128
       Timeout: 10
@@ -98,22 +115,40 @@ Resources:
         - !Ref SharedDependenciesLayer
       Environment:
         Variables:
+          IMPORT_QUEUE_URL: !Ref ImportQueue
           WOO_BASE_URL: !Sub "{{resolve:ssm:/WooBaseUrl}}"
           WOO_CONSUMER_KEY: !Sub "{{resolve:ssm:/WooConsumerKey}}"
           WOO_CONSUMER_SECRET: !Sub "{{resolve:ssm:/WooConsumerSecret}}"
-          DYNAMODB_TABLE: "WooCommerceCategories"
-          IMPORT_STATUS_TABLE: "ImportStatus"
       Events:
         HttpApi:
           ApiId: !Ref MyHttpApi
           Path: /import-categories
           Method: post
 
-  # Lambda Function to Get Import Status
-  GetImportStatusFunction:
+  # Lambda Function to Process SQS Messages and Store Data in DynamoDB
+  ProcessImportQueueFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/getImportStatus.handler
+      Handler: handlers/ProcessImportQueue.handler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 30
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Layers:
+        - !Ref SharedDependenciesLayer
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: "WooCommerceCategories"
+      Events:
+        SQS:
+          Queue: !GetAtt ImportQueue.Arn
+          BatchSize: 5
+
+  # Lambda Function to Get Import Status
+  CheckImportStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/CheckImportStatus.handler
       Runtime: nodejs18.x
       MemorySize: 128
       Timeout: 10
@@ -133,7 +168,7 @@ Resources:
   GetStoredCategoriesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/getStoredCategories.handler
+      Handler: handlers/GetStoredCategories.handler
       Runtime: nodejs18.x
       MemorySize: 128
       Timeout: 10
@@ -153,7 +188,7 @@ Resources:
   DeleteCategoryFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/deleteCategory.handler
+      Handler: handlers/DeleteCategory.handler
       Runtime: nodejs18.x
       MemorySize: 128
       Timeout: 10
@@ -174,13 +209,21 @@ Outputs:
     Description: "API Gateway Endpoint"
     Value: !Sub "https://${MyHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
 
-  ImportCategoriesFunctionArn:
-    Description: "Lambda Function ARN for Importing WooCommerce Categories"
-    Value: !GetAtt ImportCategoriesFunction.Arn
+  ImportQueueUrl:
+    Description: "URL of the SQS Import Queue"
+    Value: !Ref ImportQueue
 
-  GetImportStatusFunctionArn:
+ GetCategoriesFunctionFunctionArn:
+    Description: "Lambda Function ARN for Importing WooCommerce Categories"
+    Value: !GetAtt GetCategoriesFunctionFunction.Arn
+
+  ProcessImportQueueFunctionArn:
+    Description: "Lambda Function ARN for Processing SQS Messages"
+    Value: !GetAtt ProcessImportQueueFunction.Arn
+
+  CheckImportStatusFunctionArn:
     Description: "Lambda Function ARN for Checking Import Status"
-    Value: !GetAtt GetImportStatusFunction.Arn
+    Value: !GetAtt CheckImportStatusFunction.Arn
 
   GetStoredCategoriesFunctionArn:
     Description: "Lambda Function ARN for Retrieving Stored Categories"
