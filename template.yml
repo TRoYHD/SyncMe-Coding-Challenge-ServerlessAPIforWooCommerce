@@ -213,7 +213,7 @@ Outputs:
     Description: "URL of the SQS Import Queue"
     Value: !Ref ImportQueue
 
- GetCategoriesFunctionFunctionArn:
+ GetCategoriesFunctionArn:
     Description: "Lambda Function ARN for Importing WooCommerce Categories"
     Value: !GetAtt GetCategoriesFunctionFunction.Arn
 
