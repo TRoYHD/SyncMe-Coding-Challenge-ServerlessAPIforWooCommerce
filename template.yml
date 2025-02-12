@@ -121,9 +121,11 @@ Resources:
           WOO_CONSUMER_SECRET: !Sub "{{resolve:ssm:/WooConsumerSecret}}"
       Events:
         HttpApi:
-          ApiId: !Ref MyHttpApi
-          Path: /import-categories
-          Method: post
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyHttpApi
+            Path: /import-categories
+            Method: post
 
   # Lambda Function to Process SQS Messages and Store Data in DynamoDB
   ProcessImportQueueFunction:
@@ -141,8 +143,10 @@ Resources:
           DYNAMODB_TABLE: "WooCommerceCategories"
       Events:
         SQS:
-          Queue: !GetAtt ImportQueue.Arn
-          BatchSize: 5
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ImportQueue.Arn
+            BatchSize: 5
 
   # Lambda Function to Get Import Status
   CheckImportStatusFunction:
@@ -160,9 +164,11 @@ Resources:
           IMPORT_STATUS_TABLE: "ImportStatus"
       Events:
         HttpApi:
-          ApiId: !Ref MyHttpApi
-          Path: /import-status
-          Method: get
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyHttpApi
+            Path: /import-status
+            Method: get
 
   # Lambda Function to Get Stored Categories from DynamoDB
   GetStoredCategoriesFunction:
@@ -180,9 +186,11 @@ Resources:
           DYNAMODB_TABLE: "WooCommerceCategories"
       Events:
         HttpApi:
-          ApiId: !Ref MyHttpApi
-          Path: /stored-categories
-          Method: get
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyHttpApi
+            Path: /stored-categories
+            Method: get
 
   # Lambda Function to Delete a Product Category by WooCommerce Category ID
   DeleteCategoryFunction:
@@ -200,9 +208,11 @@ Resources:
           DYNAMODB_TABLE: "WooCommerceCategories"
       Events:
         HttpApi:
-          ApiId: !Ref MyHttpApi
-          Path: /categories/{id}
-          Method: delete
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyHttpApi
+            Path: /categories/{id}
+            Method: delete
 
 Outputs:
   ApiGatewayEndpoint:
@@ -213,9 +223,9 @@ Outputs:
     Description: "URL of the SQS Import Queue"
     Value: !Ref ImportQueue
 
- GetCategoriesFunctionArn:
+  GetCategoriesFunctionArn:
     Description: "Lambda Function ARN for Importing WooCommerce Categories"
-    Value: !GetAtt GetCategoriesFunctionFunction.Arn
+    Value: !GetAtt GetCategoriesFunction.Arn
 
   ProcessImportQueueFunctionArn:
     Description: "Lambda Function ARN for Processing SQS Messages"
