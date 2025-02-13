@@ -57,6 +57,14 @@ const deleteCategoryFromStore = async (categoryId) => {
     console.error("Error deleting category:", error);
     throw new Error("Failed to delete category.");
   }
+  
 };
-
-module.exports = { getCategories, getStoredCategories, deleteCategoryFromStore };
+const getImportStatus = async () => {
+  try {
+    return await dynamoDB.getImportStatus();
+  } catch (error) {
+    console.error("Error fetching import status:", error);
+    throw new Error("Failed to fetch import status.");
+  }
+}
+module.exports = { getCategories, getStoredCategories, deleteCategoryFromStore ,getImportStatus  };
