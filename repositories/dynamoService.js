@@ -18,13 +18,13 @@ const storeCategory = async (category) => {
   }
 };
 
-// Update import status in DynamoDB with a unique status ID
+// Update import status in DynamoDB
 const updateImportStatus = async (status) => {
   try {
-    const statusId = "importStatus"; // Could also generate a unique ID if needed
+    const statusId = "importStatus"; // Can be a fixed ID or generated dynamically for multiple statuses
 
     await dynamoDB.put({
-      TableName: DYNAMODB_TABLE,
+      TableName: IMPORT_STATUS_TABLE,  // Use the correct table for import status
       Item: { id: statusId, status },
     }).promise();
   } catch (error) {
@@ -37,7 +37,7 @@ const updateImportStatus = async (status) => {
 const getImportStatus = async () => {
   try {
     const result = await dynamoDB.get({
-      TableName: DYNAMODB_TABLE,
+      TableName: IMPORT_STATUS_TABLE,  // Use the correct table for import status
       Key: { id: "importStatus" }, // Ensure this ID is consistent with how you update
     }).promise();
 
@@ -47,7 +47,6 @@ const getImportStatus = async () => {
     throw new Error("Failed to fetch import status.");
   }
 };
-
 module.exports = {
   storeCategory,
   updateImportStatus,
