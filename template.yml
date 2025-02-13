@@ -161,7 +161,7 @@ Resources:
         - !Ref SharedDependenciesLayer
       Environment:
         Variables:
-          IMPORT_STATUS_TABLE: !Ref ImportStatus
+          IMPORT_STATUS_TABLE: !Ref ImportStatusTable
       Events:
         HttpApi:
           Type: HttpApi
