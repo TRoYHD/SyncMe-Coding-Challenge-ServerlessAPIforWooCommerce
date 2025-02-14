@@ -18,11 +18,9 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
 
-  # DynamoDB Table for storing Import Status
+  # Table for Import Status
   ImportStatusTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -33,15 +31,15 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
 
   # SQS Queue for handling category imports asynchronously
   ImportQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: "ImportQueue"
+      VisibilityTimeout: 60 
+
 
   # Lambda Layer for Shared Dependencies
   SharedDependenciesLayer:
@@ -100,6 +98,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
+                  - sqs:DeleteMessage
                 Resource: !GetAtt ImportQueue.Arn
 
   # Lambda Function to Import Categories from WooCommerce (Send to SQS)
@@ -134,21 +133,22 @@ Resources:
       Handler: handlers/ProcessImportQueue.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 30
+      Timeout: 60
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
       Environment:
         Variables:
-          DYNAMODB_TABLE: "WooCommerceCategories"
+          DYNAMODB_TABLE: "WooCommerceCategories" 
+          IMPORT_STATUS_TABLE: !Ref ImportStatusTable
       Events:
         SQS:
           Type: SQS
           Properties:
             Queue: !GetAtt ImportQueue.Arn
-            BatchSize: 5
+            BatchSize: 10
 
-  # Lambda Function to Get Import Status
+   # Lambda Function to Get Import Status
   CheckImportStatusFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -169,6 +169,7 @@ Resources:
             ApiId: !Ref MyHttpApi
             Path: /import-status
             Method: get
+
 
   # Lambda Function to Get Stored Categories from DynamoDB
   GetStoredCategoriesFunction:

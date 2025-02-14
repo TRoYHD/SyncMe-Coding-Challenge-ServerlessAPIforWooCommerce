@@ -2,11 +2,16 @@ const categoryService = require("../services/categoryService");
 
 exports.handler = async (event) => {
   try {
-    const categoryId = event.pathParameters.id;
-    const { wooBaseUrl, consumerKey, consumerSecret } = JSON.parse(event.body);
+    console.log("Incoming event:", JSON.stringify(event, null, 2));
 
-    if (!categoryId || !wooBaseUrl || !consumerKey || !consumerSecret) {
-      return { statusCode: 400, body: JSON.stringify({ error: "Missing required parameters." }) };
+    // Extract category ID from path parameters
+    const categoryId = event.pathParameters?.id;
+    
+    if (!categoryId) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing category ID in request path." }),
+      };
     }
 
     // Delete category from DynamoDB
@@ -18,6 +23,9 @@ exports.handler = async (event) => {
     };
   } catch (error) {
     console.error("Error deleting category:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Failed to delete category." }),
+    };
   }
 };

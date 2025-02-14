@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require("uuid"); // Generate unique IDs if needed
 const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
   try {
     // Step 1: Set Import Status to "pending"
-    await dynamoDB.updateImportStatus("pending");
+    await dynamoDB.updateImportStatus("pending", wooBaseUrl);
 
     // Step 2: Fetch categories from WooCommerce
     const categories = await wooCommerceService.fetchCategoriesFromWooCommerce(
@@ -14,7 +14,7 @@ const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
     );
 
     // Step 3: Set Import Status to "in-progress"
-    await dynamoDB.updateImportStatus("in-progress");
+    await dynamoDB.updateImportStatus("in-progress", wooBaseUrl);
 
     // Step 4: Store categories in DynamoDB
     for (const category of categories) {
@@ -26,39 +26,28 @@ const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
     }
 
     // Step 5: Set Import Status to "completed"
-    await dynamoDB.updateImportStatus("completed");
+    await dynamoDB.updateImportStatus("completed", wooBaseUrl);
 
     return categories; // Return categories after storing
   } catch (error) {
     console.error("Error retrieving categories:", error);
 
     // In case of failure, update the status to "failed"
-    await dynamoDB.updateImportStatus("failed");
+    await dynamoDB.updateImportStatus("failed", wooBaseUrl);
     throw new Error("Failed to retrieve categories.");
   }
 };
 
 // Retrieve all categories stored in DynamoDB
 const getStoredCategories = async () => {
-  try {
-    return await dynamoDB.getAllCategories(); // Fetch stored categories
-  } catch (error) {
-    console.error("Error retrieving stored categories from DynamoDB:", error);
-    throw new Error("Failed to retrieve stored categories.");
-  }
+  return await dynamoDB.getStoredCategories();
 };
 
-// Delete a category from DynamoDB
 const deleteCategoryFromStore = async (categoryId) => {
-  try {
-    await dynamoDB.deleteCategory(categoryId); // Delete category by ID
-    return { message: "Category deleted successfully from DynamoDB" };
-  } catch (error) {
-    console.error("Error deleting category:", error);
-    throw new Error("Failed to delete category.");
-  }
-  
+  console.log(`Deleting category from store: ${categoryId}`);
+  return await dynamoDB.deleteCategory(categoryId); 
 };
+// Retrieve the last import status (status, source, timestamp)
 const getImportStatus = async () => {
   try {
     return await dynamoDB.getImportStatus();
@@ -67,4 +56,10 @@ const getImportStatus = async () => {
     throw new Error("Failed to fetch import status.");
   }
 }
-module.exports = { getCategories, getStoredCategories, deleteCategoryFromStore ,getImportStatus  };
+
+module.exports = { 
+  getCategories, 
+  getStoredCategories, 
+  deleteCategoryFromStore,
+  getImportStatus 
+};
