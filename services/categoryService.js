@@ -1,28 +1,6 @@
 const dynamoDB = require("../repositories/dynamoService");
 const wooCommerceService = require("../repositories/wooService");
 
-// Fetch and store categories in DynamoDB
-const getCategories = async (wooBaseUrl, consumerKey, consumerSecret) => {
-  try {
-    // Step 1: Set Import Status to "pending"
-    const importId = await dynamoDB.createImport();
-
-    // Start the import process in the background
-    // Use Promise.race to ensure the Lambda doesn't exit too early
-    await Promise.race([
-      new Promise((resolve) => setTimeout(resolve, 100)), // Small delay to ensure the process starts
-      processImport(importId, wooBaseUrl, consumerKey, consumerSecret),
-    ]);
-
-    console.log("Import initiated, returning response", { importId });
-    return { message: "Import process started", importId };
-  } catch (error) {
-    console.error("Error initiating import:", JSON.stringify(error));
-    throw new Error("Failed to initiate import process.");
-  }
-};
-
-// Modify processImport to run independently
 const processImport = async (
   importId,
   wooBaseUrl,
@@ -112,7 +90,6 @@ const getImportStatus = async () => {
 };
 
 module.exports = {
-  getCategories,
   getImportStatus,
   processImport,
 };
