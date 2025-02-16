@@ -48,7 +48,7 @@ No need to manage servers (fully managed services).
 
 # ✅ S🛠 Serverless WooCommerce FLOW Architecture
 https://app.eraser.io/workspace/lSInPYkqTuopqJlrhOfM?origin=share
-
+ Switch to canvas to see the whole strcuture !
 # ✅ S🛠 Serverless WooCommerce API Architecture (Text-Based)
 
  ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/Flow%20of%20AWS%20Artc.png)
