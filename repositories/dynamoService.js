@@ -89,16 +89,29 @@ const getStoredCategories = async () => {
 };
 const deleteCategory = async (categoryId) => {
   try {
-    console.log(`Deleting category with ID: ${categoryId}`);
-
-    const params = {
+    // Check if the category exists before deleting
+    const getParams = {
       TableName: DYNAMODB_TABLE,
       Key: { id: String(categoryId) },
     };
 
-    await dynamoDB.delete(params).promise();
+    const getResult = await dynamoDB.get(getParams).promise();
 
-    return { message: "Category deleted successfully from DynamoDB" };
+    if (!getResult.Item) {
+      // Category doesn't exist, return an appropriate message
+      return { message: "Category not found, nothing to delete." };
+    }
+
+    // Category exists, proceed with deletion
+    const deleteParams = {
+      TableName: DYNAMODB_TABLE,
+      Key: { id: String(categoryId) },
+    };
+
+    await dynamoDB.delete(deleteParams).promise();
+
+    console.log(`Category ${categoryId} deleted successfully.`);
+    return { message: "Category deleted successfully from DynamoDB." };
   } catch (error) {
     console.error("Error deleting category from DynamoDB:", error);
     throw new Error("Failed to delete category.");
