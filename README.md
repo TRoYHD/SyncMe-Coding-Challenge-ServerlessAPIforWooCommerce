@@ -19,9 +19,12 @@ DynamoDB → Stores category imports and import statuses.
 
 SSM Parameter Store → 
 Securely stores WooCommerce API credentials.
- ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/Flow%20of%20servleses%20api%20for%20Wecommerce.png)
 
 Architecture & Design Evaluation
+
+ ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/Flow%20of%20servleses%20api%20for%20Wecommerce.png)
+
+
 
 # ✅ Strengths of the Design
 Scalability 🚀
@@ -58,9 +61,7 @@ https://app.eraser.io/workspace/lSInPYkqTuopqJlrhOfM?origin=share
 - [API Reference](#api-reference)
 - [Development](#development)
 - [Monitoring](#monitoring)
-- [Security](#security)
-- [Contributing](#contributing)
-- [License](#license)
+
 
 ## Prerequisites
 
