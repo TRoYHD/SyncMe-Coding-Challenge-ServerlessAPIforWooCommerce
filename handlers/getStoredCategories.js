@@ -1,8 +1,7 @@
-const categoryService = require("../services/categoryService");
+const categoryService = require("../repositories/dynamoService");
 
 exports.handler = async () => {
   try {
-    // Fetch stored categories from DynamoDB
     const categories = await categoryService.getStoredCategories();
 
     return {

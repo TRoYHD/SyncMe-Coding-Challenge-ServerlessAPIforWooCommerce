@@ -1,12 +1,11 @@
-const categoryService = require("../services/categoryService");
+const { deleteCategory } = require("../repositories/dynamoService");
 
 exports.handler = async (event) => {
   try {
     console.log("Incoming event:", JSON.stringify(event, null, 2));
 
-    // Extract category ID from path parameters
     const categoryId = event.pathParameters?.id;
-    
+
     if (!categoryId) {
       return {
         statusCode: 400,
@@ -14,8 +13,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // Delete category from DynamoDB
-    const result = await categoryService.deleteCategoryFromStore(categoryId);
+    const result = await deleteCategory(categoryId);
 
     return {
       statusCode: 200,
