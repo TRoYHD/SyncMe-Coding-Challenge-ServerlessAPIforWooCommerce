@@ -1,5 +1,5 @@
 const { processImport } = require("../services/categoryService");
-const { createImport } = require("../repositories/dynamoService");
+const { createImport } = require("../dbService/dynamoService");
 
 exports.handler = async (event) => {
   try {

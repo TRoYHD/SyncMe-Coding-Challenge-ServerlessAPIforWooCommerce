@@ -1,5 +1,5 @@
-const dynamoDB = require("../repositories/dynamoService");
-const wooCommerceService = require("../repositories/wooService");
+const dynamoDB = require("../dbService/dynamoService");
+const wooCommerceService = require("./wooService");
 
 const processImport = async (
   importId,
