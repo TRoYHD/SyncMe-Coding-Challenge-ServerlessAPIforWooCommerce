@@ -1,6 +1,7 @@
 # WooCommerce Categories Sync Service Serverless API 
 
-This project provides a serverless solution for synchronizing WooCommerce product categories with AWS DynamoDB. It uses AWS Lambda functions to handle category imports, storage, and management through a REST API.
+This project provides a serverless solution for synchronizing WooCommerce product categories with AWS DynamoDB. It uses AWS Lambda functions to handle category imports, storage, and management through a REST API
+Below full instruction on how to deploy it on AWS and making it work and Testing the API and interaction with Different services in AWS 
 
 
  # ✅ Architecture Diagram
