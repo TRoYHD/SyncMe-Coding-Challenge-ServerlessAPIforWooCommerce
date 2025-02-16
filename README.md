@@ -167,7 +167,7 @@ npm install
 cd ../..
 ```
 
-## Deployment
+## SAM Template
 
 ### Using AWS SAM Template for Serverless WooCommerce API , AWS Serverless Application Model (SAM), which is a powerful infrastructure-as-code (IaC) tool for defining and deploying serverless applications on AWS.
  ### Simplifies Serverless Deployment 🚀
@@ -203,7 +203,7 @@ SSM Parameter Store securely stores WooCommerce API credentials.
 ✔ Built-in scalability & cost savings
 
 ✔ Secure & maintainable infrastructure
-### Development Environment
+### Deployment and Development Environment
 
 ```bash
 # Build the application
