@@ -173,13 +173,22 @@ cd ../..
  ### Simplifies Serverless Deployment 🚀
 ### Instead of manually setting up API Gateway, Lambda, SQS, and DynamoDB, SAM automates the entire process.
 ### You define all AWS resources in a single template.yaml file, making infrastructure easy to manage.
+
 Cost-Effective 💰
+
 Only pay for what you use (Lambda runs on-demand, SQS processes messages asynchronously).
+
 No need to manage servers, reducing operational overhead.
+
 4️⃣ Scalability & Performance 🔥
+
 API Gateway auto-scales to handle thousands of requests.
+
 SQS ensures async processing, preventing system overload.
+
+
 DynamoDB provides fast, scalable storage with automatic replication.
+
 
 5️⃣ Secure & Maintainable 🔒
 
@@ -193,8 +202,9 @@ SSM Parameter Store securely stores WooCommerce API credentials.
 
 ✔ Built-in scalability & cost savings
 
-### Development Environment
 ✔ Secure & maintainable infrastructure
+### Development Environment
+
 ```bash
 # Build the application
 sam build
