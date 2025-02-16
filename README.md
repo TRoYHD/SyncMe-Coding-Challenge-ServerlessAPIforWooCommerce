@@ -203,16 +203,28 @@ SSM Parameter Store securely stores WooCommerce API credentials.
 ✔ Built-in scalability & cost savings
 
 ✔ Secure & maintainable infrastructure
-### Deployment and Development Environment
+### Deployment and Development Environment  !Step-by-Step Deployment Guide!
 
 ```bash
 # Build the application
 sam build
 
 # Deploy with guided setup
-sam deploy --guided 
-```
+sam deploy --guided
 
+Stack Name
+1️⃣Stack Name [sam-app]: WooCommerceAPI    //This is the name of the CloudFormation stack.
+2️⃣ AWS Region AWS Region [us-east-1]: us-east-1   //This is where your AWS resources will be deployed.
+3️⃣ Confirming Changes Before Deploying   Confirm changes before deploy [y/N]: y
+4️⃣ Allow SAM to Create IAM Roles  Allow SAM CLI IAM role creation [Y/n]: Y
+5️⃣ Save Arguments to samconfig.toml for Future Deployments
+
+```
+ What Happens After This?
+SAM packages your application.
+It uploads artifacts (Lambda code) to an S3 bucket.
+It creates/updates the CloudFormation stack to deploy API Gateway, Lambda, DynamoDB, and other resources.
+It displays API Gateway endpoint URLs after successful deployment.
 ### Verify Deployment
 1. Note the API Gateway endpoint URL
 2. Update WooCommerce webhook URLs if needed
