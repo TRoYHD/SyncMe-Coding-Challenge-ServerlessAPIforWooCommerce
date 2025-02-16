@@ -170,7 +170,24 @@ cd ../..
 ## Deployment
 
 ### Development Environment
-
+### Using AWS SAM Template for Serverless WooCommerce API , AWS Serverless Application Model (SAM), which is a powerful infrastructure-as-code (IaC) tool for defining and deploying serverless applications on AWS.
+ ### Simplifies Serverless Deployment 🚀
+### Instead of manually setting up API Gateway, Lambda, SQS, and DynamoDB, SAM automates the entire process.
+### You define all AWS resources in a single template.yaml file, making infrastructure easy to manage.
+Cost-Effective 💰
+Only pay for what you use (Lambda runs on-demand, SQS processes messages asynchronously).
+No need to manage servers, reducing operational overhead.
+4️⃣ Scalability & Performance 🔥
+API Gateway auto-scales to handle thousands of requests.
+SQS ensures async processing, preventing system overload.
+DynamoDB provides fast, scalable storage with automatic replication.
+5️⃣ Secure & Maintainable 🔒
+IAM roles & permissions are managed within SAM, ensuring secure access control.
+SSM Parameter Store securely stores WooCommerce API credentials.
+✔ One YAML file manages all AWS resources
+✔ Fast development & deployment (one command to deploy)
+✔ Built-in scalability & cost savings
+✔ Secure & maintainable infrastructure
 ```bash
 # Build the application
 sam build
