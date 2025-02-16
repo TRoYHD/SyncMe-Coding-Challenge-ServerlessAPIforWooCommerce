@@ -4,6 +4,9 @@ This project provides a serverless solution for synchronizing WooCommerce produc
 
 
  # ✅ Architecture Diagram
+
+ ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/A%20high%20Level%20Architecture%20Diagram.png)
+
  AWS Serverless WooCommerce API consists of:
 
 API Gateway → Handles HTTP requests and routes them to Lambda functions.
@@ -16,6 +19,7 @@ DynamoDB → Stores category imports and import statuses.
 
 SSM Parameter Store → 
 Securely stores WooCommerce API credentials.
+ ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/Flow%20of%20servleses%20api%20for%20Wecommerce.png)
 
 Architecture & Design Evaluation
 
@@ -38,7 +42,13 @@ Cost-Effectiveness 💰
 Serverless pricing model (pay-per-use) reduces costs.
 No need to manage servers (fully managed services).
 
+# ✅ S🛠 Serverless WooCommerce FLOW Architecture
+https://app.eraser.io/workspace/lSInPYkqTuopqJlrhOfM?origin=share
+
 # ✅ S🛠 Serverless WooCommerce API Architecture (Text-Based)
+
+ ![Diagram](https://github.com/TRoYHD/SyncMe-Coding-Challenge-ServerlessAPIforWooCommerce/blob/main/public/Flow%20of%20AWS%20Artc.png)
+
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
@@ -177,6 +187,10 @@ sam deploy --guided
 7. Check DynamoDB Tables:aws dynamodb list-tables
 
 ## API Reference
+## Testing APi that have a public access with POSTMAN 
+
+## POSTMAN DOUMENTATION FOR API : https://documenter.getpostman.com/view/27333474/2sAYXEFJfw
+## Includes on how to use Postman and add auth to access the weocmmerce and with pre-defined Requests (GET , DELETE)  examples and response and the backend server is up to try !
 
 ### Import Categories
 - **Endpoint**: GET `/import-categories`
