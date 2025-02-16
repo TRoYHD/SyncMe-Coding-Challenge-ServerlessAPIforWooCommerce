@@ -1,5 +1,4 @@
 const categoryService = require("../services/categoryService");
-const { updateImportStatus } = require("../repositories/dynamoService");
 
 exports.handler = async (event) => {
   try {
@@ -23,21 +22,15 @@ exports.handler = async (event) => {
         continue;
       }
 
-      try {
-        // Update status to "in-progress" before fetching
-        await updateImportStatus("in-progress", wooBaseUrl);
-
+      
+       try { 
         const categories = await categoryService.getCategories(wooBaseUrl, consumerKey, consumerSecret);
 
         console.log("Categories fetched and stored successfully:", categories);
 
-        // Update status to "success" after successful import
-        await updateImportStatus("success", wooBaseUrl);
-      } catch (fetchError) {
+      } 
+      catch (fetchError) {
         console.error("Error fetching categories:", fetchError);
-
-        // Update status to "failed" in case of error
-        await updateImportStatus("failed", wooBaseUrl);
       }
     }
 

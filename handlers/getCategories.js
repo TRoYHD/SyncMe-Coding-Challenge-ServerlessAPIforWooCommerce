@@ -17,17 +17,6 @@ const getParameter = async (name) => {
 
 exports.handler = async (event) => {
   try {
-    console.log("Received event:", JSON.stringify(event, null, 2)); // Debugging
-
-    let requestBody;
-
-    // Ensure event.body is parsed correctly
-    if (typeof event.body === "string") {
-      requestBody = JSON.parse(event.body);
-    } else {
-      requestBody = event.body; // Assume it's already parsed
-    }
-
     // Retrieve parameters from SSM
     const wooBaseUrl = await getParameter('/WooBaseUrl');
     const consumerKey = await getParameter('/WooConsumerKey');

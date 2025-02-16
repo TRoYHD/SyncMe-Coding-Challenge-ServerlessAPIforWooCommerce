@@ -7,12 +7,13 @@ const IMPORT_STATUS_TABLE = process.env.IMPORT_STATUS_TABLE; // Import status ta
 // Store category in DynamoDB with a unique ID if missing
 const storeCategory = async (category) => {
   try {
-    if (!category.id) {
-      category.id = uuidv4(); // Generate a unique ID if not provided
-    }
-
-    await dynamoDB.put({ TableName: DYNAMODB_TABLE, Item: category }).promise();
-    return category; // Return stored category
+    await dynamoDB.put({
+      TableName: DYNAMODB_TABLE,
+      Item: {
+        id: category.id,
+        name: category.name
+      }
+    }).promise();
   } catch (error) {
     console.error(`Error storing category ${JSON.stringify(category)} in DynamoDB:`, error);
     throw new Error("Failed to store category.");
@@ -20,28 +21,54 @@ const storeCategory = async (category) => {
 };
 
 // Update import status in DynamoDB with source and timestamp
-const updateImportStatus = async (status, soruse) => {
+const createImport = async () => {
   try {
-    const statusId = uuidv4(); // Generate a unique ID for each status record
 
+    const importId = uuidv4(); // Generate unique ID for the import
     const item = {
-      id: statusId,
-      status,
-      soruse,
-      timestamp: new Date().toISOString(), // Timestamp for the import
-    };
-    console.log('IMPORT_STATUS_TABLE:', IMPORT_STATUS_TABLE); // Add this line for debugging
+      id: importId,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
 
-    if (!IMPORT_STATUS_TABLE) {
-      throw new Error('Missing IMPORT_STATUS_TABLE environment variable');
-    }
+    };
+
     await dynamoDB.put({
       TableName: IMPORT_STATUS_TABLE,
       Item: item,
     }).promise();
+
+    return importId; // Return the ID so it can be used for updates
   } catch (error) {
-    console.error("Error updating import status in DynamoDB:", error);
-    throw new Error("Failed to update import status.");
+    console.error("Error creating import in DynamoDB:", error);
+    throw new Error("Failed to create import.");
+  }
+};
+
+const updateImport = async (importId, status) => {
+  try {
+
+    // Validate that status is one of the accepted values
+    const validStatuses = ["pending", "in-progress", "completed", "failed"];
+    if (!validStatuses.includes(status)) {
+      throw new Error(`Invalid status value: ${status}. Valid statuses are ${validStatuses.join(", ")}.`);
+    }
+    await dynamoDB.update({
+      TableName: IMPORT_STATUS_TABLE,
+      Key: { id: importId },
+      UpdateExpression: "set #status = :status, #lastUpdated = :lastUpdated",
+      ExpressionAttributeNames: {
+        "#status": "status",
+        "#lastUpdated": "lastUpdated"
+      },
+      ExpressionAttributeValues: {
+        ":status": status,
+        ":lastUpdated": new Date().toISOString()
+      }
+    }).promise();
+  } catch (error) {
+    console.error("Error updating import in DynamoDB:", error);
+    throw new Error("Failed to update import.");
   }
 };
 
@@ -96,8 +123,9 @@ const deleteCategory = async (categoryId) => {
 
 module.exports = {
   storeCategory,
-  updateImportStatus,
   getImportStatus,
   getStoredCategories,
-  deleteCategory
+  deleteCategory,
+  createImport,
+  updateImport
 };

@@ -4,25 +4,27 @@ const axios = require("axios");
 const fetchCategoriesFromWooCommerce = async (wooBaseUrl, consumerKey, consumerSecret) => {
   try {
     // Fetch categories from WooCommerce
+    console.log('entering fetching catergoies', { wooBaseUrl });
+
     const response = await axios.get(`${wooBaseUrl}/wp-json/wc/v3/products/categories`, {
       auth: { username: consumerKey, password: consumerSecret },
     });
+    console.log('we are entering the fetchiing', { response });
 
-    // Map the response to return only relevant fields for storing in DynamoDB
-    return response.data.map(category => ({
-      id: category.id.toString(), 
-      name: category.name,
-      slug: category.slug,
-      parent: category.parent,
-      description: category.description,
-      display: category.display,
-      image: category.image ? category.image.src : null, // Only store image URL
-      menu_order: category.menu_order,
-    }));
-  } catch (error) {
-    console.error("Error fetching categories from WooCommerce:", error.response?.data || error.message);
-    throw new Error("Failed to fetch categories from WooCommerce.");
-  }
+   // Map categories and return relevant data
+   return response.data.map(category => ({
+    id: category.id.toString(), // Store the category ID as string
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    parent: category.parent,
+    image: category.image ? category.image.src : null, // Store image URL if exists
+    menu_order: category.menu_order,
+  }));
+} catch (error) {
+  console.error("Error fetching categories from WooCommerce:", error);
+  throw new Error("Failed to fetch categories from WooCommerce.");
+}
 };
 
 module.exports = { fetchCategoriesFromWooCommerce };

@@ -1,8 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "shadowApi2"
+stack_name = "shadowApi4"
 resolve_s3 = true
-s3_prefix = "shadowApi2"
+s3_prefix = "shadowApi4"
 region = "eu-north-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"

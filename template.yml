@@ -38,7 +38,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: "ImportQueue"
-      VisibilityTimeout: 60 
+      VisibilityTimeout: 90 
 
 
   # Lambda Layer for Shared Dependencies
@@ -100,7 +100,20 @@ Resources:
                   - sqs:GetQueueAttributes
                   - sqs:DeleteMessage
                 Resource: !GetAtt ImportQueue.Arn
+        - PolicyName: LambdaCloudWatchLogsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*:*"
 
+     
+               
   # Lambda Function to Import Categories from WooCommerce (Send to SQS)
   GetCategoriesFunction:
     Type: AWS::Serverless::Function
@@ -108,7 +121,7 @@ Resources:
       Handler: handlers/GetCategories.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 10
+      Timeout: 90
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
@@ -124,7 +137,7 @@ Resources:
           Properties:
             ApiId: !Ref MyHttpApi
             Path: /import-categories
-            Method: post
+            Method: get
 
   # Lambda Function to Process SQS Messages and Store Data in DynamoDB
   ProcessImportQueueFunction:
@@ -133,7 +146,7 @@ Resources:
       Handler: handlers/ProcessImportQueue.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 60
+      Timeout: 90
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
@@ -148,14 +161,14 @@ Resources:
             Queue: !GetAtt ImportQueue.Arn
             BatchSize: 10
 
-   # Lambda Function to Get Import Status
+     # Lambda Function to Get Import Status
   CheckImportStatusFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: handlers/CheckImportStatus.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 10
+      Timeout: 90
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
@@ -178,7 +191,7 @@ Resources:
       Handler: handlers/GetStoredCategories.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 10
+      Timeout: 90
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
@@ -200,7 +213,7 @@ Resources:
       Handler: handlers/DeleteCategory.handler
       Runtime: nodejs18.x
       MemorySize: 128
-      Timeout: 10
+      Timeout: 90
       Role: !GetAtt LambdaExecutionRole.Arn
       Layers:
         - !Ref SharedDependenciesLayer
