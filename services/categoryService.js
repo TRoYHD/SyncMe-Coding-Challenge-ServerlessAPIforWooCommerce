@@ -111,5 +111,5 @@ const getImportStatus = async () => {
 module.exports = { 
   getCategories,
   getImportStatus,
-
+  processImport
 };

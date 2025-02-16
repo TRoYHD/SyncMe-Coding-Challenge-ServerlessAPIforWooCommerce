@@ -138,7 +138,7 @@ Resources:
             ApiId: !Ref MyHttpApi
             Path: /import-categories
             Method: get
-
+    
   # Lambda Function to Process SQS Messages and Store Data in DynamoDB
   ProcessImportQueueFunction:
     Type: AWS::Serverless::Function
