@@ -1,4 +1,4 @@
-const { deleteCategory } = require("../repositories/dynamoService");
+const { deleteCategory } = require("../dbService/dynamoService");
 
 exports.handler = async (event) => {
   try {

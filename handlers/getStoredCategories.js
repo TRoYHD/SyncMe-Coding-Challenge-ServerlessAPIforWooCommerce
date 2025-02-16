@@ -1,4 +1,4 @@
-const categoryService = require("../repositories/dynamoService");
+const categoryService = require("../dbService/dynamoService");
 
 exports.handler = async () => {
   try {
